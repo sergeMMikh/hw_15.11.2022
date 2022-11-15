@@ -73,22 +73,10 @@ async def get_person(people_id: int, session: ClientSession) -> dict | str:
                             'species': result_dic.get('species'),
                             'starships': result_dic.get('starships'),
                             'vehicles': result_dic.get('vehicles')})
+        return person_data
     else:
-        person_data.update({'birth_year': 'not found',
-                            'eye_color': 'not found',
-                            'films': 'not found',
-                            'gender': 'not found',
-                            'hair_color': 'not found',
-                            'height': 'not found',
-                            'homeworld': 'not found',
-                            'mass': 'not found',
-                            'name': 'not found',
-                            'skin_color': 'not found',
-                            'species': 'not found',
-                            'starships': 'not found',
-                            'vehicles': 'not found'})
-
-    return person_data
+        print(f'The Person with id {people_id} not found!')
+        return 'Not Found'
 
 
 async def get_people():
@@ -103,7 +91,13 @@ async def get_people():
 
 async def insert_people(people_chunk):
     async with Session() as session:
-        session.add_all([People(**item) for item in people_chunk])
+        # session.add_all([People(**item) for item in people_chunk])
+        for item in people_chunk:
+            if item != 'Not Found':
+                print('One Person added to database.')
+                session.add(People(**item))
+            else:
+                print('Nothing to record to database.')
         await session.commit()
 
 
