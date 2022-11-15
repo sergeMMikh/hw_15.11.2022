@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-from pprint import pprint
 from aiohttp import ClientSession
 from more_itertools import chunked
 from sqlalchemy.orm import sessionmaker
@@ -56,9 +55,6 @@ async def get_person(people_id: int, session: ClientSession) -> dict | str:
     async with session.get(f'https://swapi.tech/api/people/{people_id}') as response:
         json_data = await response.json()
 
-    print(f'end {people_id}')
-
-    # pprint(json_data)
     person_data = {'id': people_id}
 
     if json_data.get('message') == 'ok':
@@ -77,9 +73,6 @@ async def get_person(people_id: int, session: ClientSession) -> dict | str:
                             'species': result_dic.get('species'),
                             'starships': result_dic.get('starships'),
                             'vehicles': result_dic.get('vehicles')})
-
-        # pprint(person_data)
-
     else:
         person_data.update({'birth_year': 'not found',
                             'eye_color': 'not found',
