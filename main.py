@@ -5,7 +5,7 @@ from aiohttp import ClientSession
 from more_itertools import chunked
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy import Column, Integer, JSON
+from sqlalchemy import Column, Integer, ARRAY, String
 from sqlalchemy.ext.declarative import declarative_base
 
 CHUNK_SIZE = 10
@@ -34,18 +34,32 @@ class People(Base):
     __tablename__ = 'people'
 
     id = Column(Integer, primary_key=True)
-    json = Column(JSON)
+    birth_year = Column(String(10))  # because can be 'unknown'
+    eye_color = Column(String(100))
+    films = Column(ARRAY(String))  # строка с названиями фильмов через запятую
+    gender = Column(String(10))
+    hair_color = Column(String(100))
+    height = Column(String(10))  # because can be 'unknown'
+    homeworld = Column(String(254))
+    mass = Column(String(10))  # because can be 'unknown'
+    name = Column(String(100))
+    skin_color = Column(String(50))
+    species = Column(ARRAY(String))  # строка с названиями типов через запятую
+    starships = Column(ARRAY(String))  # строка с названиями кораблей через запятую
+    vehicles = Column(ARRAY(String))  # строка с названиями транспорта через запятую
 
 
-async def get_person(people_id: int, session: ClientSession):
+async def get_person(people_id: int, session: ClientSession) -> dict:
     print(f'start {people_id}')
 
     async with session.get(f'https://swapi.dev/api/people/{people_id}') as response:
-        json_data = await response.json()
+        response_data = await response
 
     print(f'end {people_id}')
 
-    return json_data
+    return {'people_id': people_id,
+            'json': response_data.json(),
+            'status': response_data.status_code}
 
 
 async def get_people():
@@ -60,10 +74,23 @@ async def get_people():
 
 async def insert_people(people_chunk):
     async with Session() as session:
-        session.add_all([People(json=item) for item in people_chunk])
+        session.add_all([People(id=item.get('people_id'),
+                                birth_year=item.get('json').get('birth_year'),
+                                eye_color=item.get('json').get('birth_year'),
+                                films=item.get('json').get('birth_year'),
+                                gender=item.get('json').get('birth_year'),
+                                hair_color=item.get('json').get('birth_year'),
+                                height=item.get('json').get('birth_year'),
+                                homeworld=item.get('json').get('birth_year'),
+                                mass=item.get('json').get('birth_year'),
+                                name=item.get('json').get('birth_year'),
+                                skin_color=item.get('json').get('birth_year'),
+                                species=item.get('json').get('birth_year'),
+                                starships=item.get('json').get('birth_year'),
+                                vehicles=item.get('json').get('birth_year'),
+                                )
+                         for item in people_chunk])
         await session.commit()
-
-    ...
 
 
 async def main():
