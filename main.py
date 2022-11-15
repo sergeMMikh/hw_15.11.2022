@@ -49,22 +49,58 @@ class People(Base):
     vehicles = Column(ARRAY(String))  # строка с названиями транспорта через запятую
 
 
-async def get_person(people_id: int, session: ClientSession) -> dict:
+async def get_person(people_id: int, session: ClientSession) -> dict | str:
     print(f'start {people_id}')
 
-    async with session.get(f'https://swapi.dev/api/people/{people_id}') as response:
-        response_data = await response
+    # mirror https://www.swapi.dev/
+    async with session.get(f'https://swapi.tech/api/people/{people_id}') as response:
+        json_data = await response.json()
 
     print(f'end {people_id}')
 
-    return {'people_id': people_id,
-            'json': response_data.json(),
-            'status': response_data.status_code}
+    # pprint(json_data)
+    person_data = {'id': people_id}
+
+    if json_data.get('message') == 'ok':
+        result_dic = json_data.get('result').get('properties')
+
+        person_data.update({'birth_year': result_dic.get('birth_year'),
+                            'eye_color': result_dic.get('eye_color'),
+                            'films': result_dic.get('films'),
+                            'gender': result_dic.get('gender'),
+                            'hair_color': result_dic.get('hair_color'),
+                            'height': result_dic.get('height'),
+                            'homeworld': result_dic.get('homeworld'),
+                            'mass': result_dic.get('mass'),
+                            'name': result_dic.get('name'),
+                            'skin_color': result_dic.get('skin_color'),
+                            'species': result_dic.get('species'),
+                            'starships': result_dic.get('starships'),
+                            'vehicles': result_dic.get('vehicles')})
+
+        # pprint(person_data)
+
+    else:
+        person_data.update({'birth_year': 'not found',
+                            'eye_color': 'not found',
+                            'films': 'not found',
+                            'gender': 'not found',
+                            'hair_color': 'not found',
+                            'height': 'not found',
+                            'homeworld': 'not found',
+                            'mass': 'not found',
+                            'name': 'not found',
+                            'skin_color': 'not found',
+                            'species': 'not found',
+                            'starships': 'not found',
+                            'vehicles': 'not found'})
+
+    return person_data
 
 
 async def get_people():
     async with ClientSession() as session:
-        for chunk in chunked(range(1, 80), CHUNK_SIZE):
+        for chunk in chunked(range(1, 100), CHUNK_SIZE):
             coroutines = [get_person(people_id=i, session=session) for i in chunk]
             results = await asyncio.gather(*coroutines)
 
@@ -74,22 +110,7 @@ async def get_people():
 
 async def insert_people(people_chunk):
     async with Session() as session:
-        session.add_all([People(id=item.get('people_id'),
-                                birth_year=item.get('json').get('birth_year'),
-                                eye_color=item.get('json').get('birth_year'),
-                                films=item.get('json').get('birth_year'),
-                                gender=item.get('json').get('birth_year'),
-                                hair_color=item.get('json').get('birth_year'),
-                                height=item.get('json').get('birth_year'),
-                                homeworld=item.get('json').get('birth_year'),
-                                mass=item.get('json').get('birth_year'),
-                                name=item.get('json').get('birth_year'),
-                                skin_color=item.get('json').get('birth_year'),
-                                species=item.get('json').get('birth_year'),
-                                starships=item.get('json').get('birth_year'),
-                                vehicles=item.get('json').get('birth_year'),
-                                )
-                         for item in people_chunk])
+        session.add_all([People(**item) for item in people_chunk])
         await session.commit()
 
 
