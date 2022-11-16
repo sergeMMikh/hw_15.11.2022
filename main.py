@@ -33,16 +33,16 @@ class People(Base):
     __tablename__ = 'people'
 
     id = Column(Integer, primary_key=True)
-    birth_year = Column(String(10))  # because can be 'unknown'
-    eye_color = Column(String(100))
+    birth_year = Column(String())  # because can be 'unknown'
+    eye_color = Column(String())
     films = Column(ARRAY(String))  # строка с названиями фильмов через запятую
-    gender = Column(String(10))
-    hair_color = Column(String(100))
-    height = Column(String(10))  # because can be 'unknown'
-    homeworld = Column(String(254))
-    mass = Column(String(10))  # because can be 'unknown'
-    name = Column(String(100))
-    skin_color = Column(String(50))
+    gender = Column(String())
+    hair_color = Column(String())
+    height = Column(String())  # because can be 'unknown'
+    homeworld = Column(String())
+    mass = Column(String())  # because can be 'unknown'
+    name = Column(String())
+    skin_color = Column(String())
     species = Column(ARRAY(String))  # строка с названиями типов через запятую
     starships = Column(ARRAY(String))  # строка с названиями кораблей через запятую
     vehicles = Column(ARRAY(String))  # строка с названиями транспорта через запятую
