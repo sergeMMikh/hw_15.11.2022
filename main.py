@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy import Column, Integer, ARRAY, String
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.exc import IntegrityError
 
 CHUNK_SIZE = 10
 
@@ -94,11 +95,14 @@ async def insert_people(people_chunk):
         # session.add_all([People(**item) for item in people_chunk])
         for item in people_chunk:
             if item != 'Not Found':
-                print('One Person added to database.')
-                session.add(People(**item))
+                try:
+                    session.add(People(**item))
+                    await session.commit()
+                    print('One Person added to database.')
+                except IntegrityError:
+                    print('This Person is in the database jet.')
             else:
                 print('Nothing to record to database.')
-        await session.commit()
 
 
 async def main():
